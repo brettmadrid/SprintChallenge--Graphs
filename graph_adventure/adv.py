@@ -1,6 +1,7 @@
 from room import Room
 from player import Player
 from world import World
+from queue import Queue
 
 import random
 
@@ -17,12 +18,75 @@ roomGraph={494: [(1, 8), {'e': 457}], 492: [(1, 20), {'e': 400}], 493: [(2, 5), 
 
 world.loadGraph(roomGraph)
 world.printRooms()
-player = Player("Name", world.startingRoom)
-
+player = Player("Neo", world.startingRoom)
+print(world.startingRoom)
 
 # FILL THIS IN
-traversalPath = ['n', 's']
+traversalPath = list()
+graph = dict()
 
+def reverse(direction):
+    if direction == 'n':
+        return 's'
+    elif direction == 's':
+        return 'n'
+    elif direction == 'e':
+        return 'w'
+    elif direction == 'w':
+        return 'e'
+
+def bfs(graph, starting_vert):
+    q = Queue()
+    q.put([starting_vert])
+    visited = set()
+
+    while not q.empty():
+        path = q.get()
+        vertex = path[-1]
+        if vertex not in visited:
+            visited.add(vertex)
+            for room_exit in graph[vertex]:
+                if graph[vertex][room_exit] == '?':
+                    return path
+            for x in graph[vertex]:
+                next_room = graph[vertex][x]
+                new_path = path.copy()
+                new_path.append(next_room)
+                q.put(new_path)
+    return None
+
+    while len(graph) != len(roomGraph):
+        current = player.currentRoom.id
+        if current not in graph:
+            graph[current] = {i: '?' for i in player.currentRoom.getExits()}
+        room_exit = None
+
+        for direction in graph[current]:
+            if graph[current][direction] == '?':
+                room_exit = direction
+
+                if room_exit is not None:
+                    traversalPath.append(room_exit)
+                    player.travel(room_exit)
+
+                    if player.currentRoom.id not in graph:
+                        graph[player.currentRoom.id] = { i: '?' for i in player.currentRoom.getExits()}
+
+                graph[current][room_exit] = player.currentRoom.id
+                graph[player.currentRoom.id][reverse(room_exit)] = current
+                current = player.currentRoom.id
+                break        
+        
+        room_keys = bfs(graph, player.currentRoom.id)
+
+        if room_keys is not None:
+            for room in room_keys:
+                for direction in graph[current]:
+                    if graph[current][direction] == room:
+                        traversalPath.append(direction)
+                        player.travel(direction)
+
+                current = player.currentRoom.id
 
 # TRAVERSAL TEST
 visited_rooms = set()
