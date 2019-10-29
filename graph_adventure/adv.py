@@ -32,22 +32,30 @@ def traverse(player, world, graph):
     visited = set()
     path = []
     
+    # as long as I have not gone through all the rooms
     while len(visited) != len(world.rooms):
+        # get last item from the stack
         current_room = stack[-1]
+        # add current room to visited
         visited.add(current_room)
+        # set up rooms at the graph current room
         rooms = graph[current_room][1]
+        # set up queue to visit for BFT
         visit_queue = []
 
-        # check for adjacent rooms
+        # check for adjacent rooms not already visited
         for current_room, room in rooms.items():
             if room not in visited:
                 visit_queue.append(room)
 
-        # set next room
+        # set next room as long as the queue has rooms left
         if len(visit_queue):
+            # get next room from front of queue
             room = visit_queue[0]
+            # and append to the stack
             stack.append(visit_queue[0])
         else:
+            # if visit_queue is empty go on to next stack item
             room = stack[-2]
             stack.pop()
 
